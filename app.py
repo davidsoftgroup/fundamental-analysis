@@ -2,8 +2,8 @@
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "utils")))
+# اضافه کردن مسیر utils به sys.path
+sys.path.append(os.path.join(os.path.dirname(__file__), "utils"))
 
 st.set_page_config(
     page_title="تحلیل بنیادی بورس",
@@ -12,11 +12,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ✅ import صحیح از پوشه utils
 from utils.styles import apply_styles
 apply_styles()
 
 st.title("سامانه تحلیل بنیادی بورس")
-# ... بقیه
 st.markdown("---")
 
 st.markdown("""
