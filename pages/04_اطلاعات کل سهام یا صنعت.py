@@ -858,6 +858,9 @@ P/E: 🟢 مناسب < ۵  |  🟡 متوسط ۵ تا ۷  |  🔴 بالا > ۷
 # ============================================================
 # خروجی اکسل
 # ============================================================
+# ============================================================
+# خروجی اکسل - اصلاح‌شده
+# ============================================================
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 from openpyxl.utils import get_column_letter
@@ -903,33 +906,64 @@ def build_excel(df_export):
     ws.row_dimensions[1].height = 28
 
     for r_idx, (_, row) in enumerate(df_export.iterrows(), 2):
-        progress_val = row["پیشرفت سال مالی"]
+        # ============================================================
+        # ✅ اصلاح محاسبه وضعیت - دقیقاً مانند جدول HTML
+        # ============================================================
         coverage_val = row["نسبت پوشش برآورد"]
-        reported_months = row["تعداد ماه‌های گزارش"]
-        has_export = row["صادراتی"]
+        progress_val = row["پیشرفت سال مالی"]
         
-        # وضعیت
-        if coverage_val is not None and progress_val is not None:
+        # تابع get_status_html را دقیقاً پیاده‌سازی می‌کنیم
+        if coverage_val is None or pd.isna(coverage_val) or progress_val is None or pd.isna(progress_val):
+            status = "—"
+        else:
             try:
-                diff = float(coverage_val) - float(progress_val)
-                if diff > 5:
-                    status = "جلوتر"
-                elif diff < -5:
-                    status = "عقب‌تر"
+                # coverage به صورت اعشار هست (مثلاً 1.241 = 124.1%)
+                coverage_float = float(coverage_val)
+                progress_float = float(progress_val)
+                
+                # اگر coverage بیشتر از 10 باشه، یعنی به صورت درصد ذخیره شده (مثلاً 124)
+                if coverage_float > 10:
+                    coverage_float = coverage_float / 100
+                
+                # progress به صورت درصد هست (مثلاً 58 = 58%)
+                # تبدیل به اعشار
+                progress_decimal = progress_float / 100
+                
+                # محاسبه اختلاف
+                diff = coverage_float - progress_decimal
+                diff_percent = diff * 100
+                
+                if diff > 0.05:
+                    status = f"جلوتر ({diff_percent:.1f}%)"
+                elif diff < -0.05:
+                    status = f"عقب‌تر ({abs(diff_percent):.1f}%)"
                 else:
                     status = "طبق برنامه"
-            except:
+            except (ValueError, TypeError):
                 status = "—"
-        else:
-            status = "—"
+        
+        has_export = row["صادراتی"]
         
         values = [
-            row["نماد"], row["نام"], row["صنعت"], "بله" if has_export else "خیر",
-            row["ارزش بازار"], progress_val, reported_months,
-            row["برآورد فروش"], row["فروش محقق‌شده"], coverage_val, status,
-            row["میانگین حاشیه"], row["برآورد سود"], row["برآورد سود تقسیمی"],
-            row["P/E Forward"], row["P/D Forward"], row["P/S Forward"],
-            row["حاشیه آخرین دوره"], row["نسبت مطالبات"],
+            row["نماد"], 
+            row["نام"], 
+            row["صنعت"], 
+            "بله" if has_export else "خیر",
+            row["ارزش بازار"], 
+            progress_val, 
+            row["تعداد ماه‌های گزارش"],
+            row["برآورد فروش"], 
+            row["فروش محقق‌شده"], 
+            coverage_val, 
+            status,
+            row["میانگین حاشیه"], 
+            row["برآورد سود"], 
+            row["برآورد سود تقسیمی"],
+            row["P/E Forward"], 
+            row["P/D Forward"], 
+            row["P/S Forward"],
+            row["حاشیه آخرین دوره"], 
+            row["نسبت مطالبات"],
         ]
 
         for c_idx, val in enumerate(values, 1):
@@ -939,20 +973,31 @@ def build_excel(df_export):
             if r_idx % 2 == 0:
                 cell.fill = alt_fill
 
-            if c_idx in (1, 2, 3, 4, 11):
+            # ستون‌های متنی
+            if c_idx in (1, 2, 3, 4, 11):  # 11 = وضعیت
                 cell.value = val if val is not None else "—"
+                if c_idx == 11:  # ستون وضعیت
+                    if "جلوتر" in str(val):
+                        cell.font = Font(color="16A34A", bold=True)
+                    elif "عقب‌تر" in str(val):
+                        cell.font = Font(color="DC2626", bold=True)
+                    elif "طبق برنامه" in str(val):
+                        cell.font = Font(color="CA8A04", bold=True)
                 continue
 
-            if c_idx == 6:  # پیشرفت سال مالی
+            # ستون پیشرفت سال مالی (6)
+            if c_idx == 6:
                 if val is None or pd.isna(val):
                     cell.value = "—"
                 else:
-                    cell.value = float(val)
+                    cell.value = float(val) / 100
                     cell.number_format = '0.00%'
 
-            if c_idx == 7:  # تعداد ماه‌های گزارش
+            # تعداد ماه‌های گزارش (7)
+            if c_idx == 7:
                 cell.value = val if val is not None and val > 0 else "—"
 
+            # ستون‌های عددی (ارزش بازار، برآورد فروش، فروش محقق‌شده، برآورد سود، سود تقسیمی)
             if c_idx in (5, 8, 9, 13, 14):
                 if val is None or pd.isna(val):
                     cell.value = "—"
@@ -960,19 +1005,26 @@ def build_excel(df_export):
                     cell.value = float(val)
                     cell.number_format = '#,##0'
 
-            elif c_idx == 10:  # نسبت پوشش برآورد
+            # نسبت پوشش برآورد (10)
+            elif c_idx == 10:
                 if val is None or pd.isna(val):
                     cell.value = "—"
                 else:
-                    cell.value = float(val) / 100 if val > 1 else float(val)
+                    # اگر مقدار بیشتر از 1 باشد، به درصد تبدیل می‌کنیم
+                    val_float = float(val)
+                    if val_float > 1:
+                        val_float = val_float / 100
+                    cell.value = val_float
                     cell.number_format = '0.00%'
-                    if val >= 0.9:
+                    # رنگ‌بندی
+                    if val_float >= 0.9:
                         cell.fill = green_fill
-                    elif val >= 0.6:
+                    elif val_float >= 0.6:
                         cell.fill = yellow_fill
                     else:
                         cell.fill = red_fill
 
+            # ستون‌های درصدی (میانگین حاشیه، حاشیه آخرین دوره، نسبت مطالبات)
             elif c_idx in (12, 18, 19):
                 if val is None or pd.isna(val):
                     cell.value = "—"
@@ -980,12 +1032,14 @@ def build_excel(df_export):
                     cell.value = float(val)
                     cell.number_format = '0.00%'
 
+            # ستون‌های نسبت (P/E, P/D, P/S)
             elif c_idx in (15, 16, 17):
                 if val is None or pd.isna(val):
                     cell.value = "—"
                 else:
                     cell.value = float(val)
                     cell.number_format = '0.00'
+                    # رنگ‌بندی P/E
                     if c_idx == 15:
                         pe = float(val)
                         if pe < 5:
@@ -995,7 +1049,8 @@ def build_excel(df_export):
                         else:
                             cell.fill = red_fill
 
-    widths = [10, 22, 18, 12, 14, 16, 16, 14, 16, 14, 12, 14, 14, 12, 12, 12, 12, 16, 14]
+    # تنظیم عرض ستون‌ها
+    widths = [10, 22, 18, 12, 14, 16, 16, 14, 16, 14, 20, 14, 14, 12, 12, 12, 12, 16, 14]
     for i, w in enumerate(widths, 1):
         ws.column_dimensions[get_column_letter(i)].width = w
 
