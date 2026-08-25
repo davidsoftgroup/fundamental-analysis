@@ -18,9 +18,7 @@ def init_db():
     conn = get_connection()
     cursor = conn.cursor()
 
-    # =====================================================
     # جدول شرکت‌ها
-    # =====================================================
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS companies (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,9 +42,7 @@ def init_db():
     except:
         pass
 
-    # =====================================================
     # جدول دوره‌های مالی
-    # =====================================================
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS periods (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,9 +56,7 @@ def init_db():
         )
     """)
 
-    # =====================================================
     # جدول صورت‌های مالی
-    # =====================================================
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS financials (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -88,9 +82,7 @@ def init_db():
     except:
         pass
 
-    # =====================================================
     # جدول فروش ماهانه
-    # =====================================================
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS monthly_sales (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,9 +97,7 @@ def init_db():
         )
     """)
 
-    # =====================================================
     # جدول برآوردها
-    # =====================================================
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS estimates (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -125,9 +115,7 @@ def init_db():
         )
     """)
 
-    # =====================================================
     # جدول اقلام درآمد غیرعملیاتی / سایر
-    # =====================================================
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS non_operating_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -142,9 +130,7 @@ def init_db():
         )
     """)
 
-    # =====================================================
     # جدول حجم ماهانه
-    # =====================================================
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS monthly_volume (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -169,7 +155,7 @@ def init_db():
         pass
 
     # =====================================================
-    # جدول گزارش‌های کدال
+    # =============== جدول جدید: گزارش‌های کدال ===========
     # =====================================================
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS codal_reports (
@@ -198,10 +184,8 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_codal_reports_symbol ON codal_reports(symbol)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_codal_reports_sent_date ON codal_reports(sent_date)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_codal_reports_is_new ON codal_reports(is_new)")
-
-    # =====================================================
+    
     # جدول تاریخچه پایش
-    # =====================================================
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS monitor_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -216,41 +200,9 @@ def init_db():
     """)
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_monitor_history_date ON monitor_history(check_date)")
 
-    # =====================================================
-    # جدول تصمیمات مجمع سالیانه
-    # =====================================================
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS meeting_decisions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            symbol TEXT NOT NULL,
-            year_solar INTEGER NOT NULL,
-            capital REAL,
-            net_profit REAL,
-            retained_earnings REAL,
-            approved_dividend REAL,
-            eps REAL,
-            dps REAL,
-            dividend_percent REAL,
-            meeting_date TEXT,
-            decision_date TEXT,
-            is_approved INTEGER DEFAULT 1,
-            notes TEXT,
-            source TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(symbol, year_solar)
-        )
-    """)
-
-    # ایندکس‌های جدول meeting_decisions
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_meeting_decisions_symbol ON meeting_decisions(symbol)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_meeting_decisions_year ON meeting_decisions(year_solar)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_meeting_decisions_date ON meeting_decisions(meeting_date)")
-
     conn.commit()
     conn.close()
-    print("Database initialized successfully with all tables.")
-
+    print("Database initialized successfully with codal_reports table.")
 
 # =====================================================
 # =============== توابع حجم ماهانه ====================
@@ -357,7 +309,6 @@ def get_volume_stats():
         print(f"Error in get_volume_stats: {e}")
         return {'total': 0, 'updated': 0}
 
-
 # =====================================================
 # =============== توابع کمکی ===========================
 # =====================================================
@@ -376,7 +327,6 @@ def get_all_symbols_from_db():
     except Exception as e:
         print(f"Error in get_all_symbols_from_db: {e}")
         return []
-
 
 # =====================================================
 # =============== توابع گزارش‌های کدال ===============
@@ -446,229 +396,6 @@ def save_codal_report(report_data):
     except Exception as e:
         print(f"Error in save_codal_report: {e}")
         return False
-
-
-# =====================================================
-# =============== توابع تصمیمات مجمع سالیانه ==========
-# =====================================================
-
-def get_meeting_decisions(symbol=None, year=None, limit=50):
-    """
-    دریافت تصمیمات مجمع از دیتابیس
-    
-    Args:
-        symbol: نماد شرکت (اختیاری)
-        year: سال مالی (اختیاری)
-        limit: تعداد رکوردها
-    
-    Returns:
-        list: لیست تصمیمات مجمع
-    """
-    try:
-        conn = get_connection()
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        
-        query = """
-            SELECT * FROM meeting_decisions 
-            WHERE 1=1
-        """
-        params = []
-        
-        if symbol:
-            query += " AND symbol = ?"
-            params.append(symbol)
-        
-        if year:
-            query += " AND year_solar = ?"
-            params.append(year)
-        
-        query += " ORDER BY year_solar DESC, meeting_date DESC LIMIT ?"
-        params.append(limit)
-        
-        cursor.execute(query, params)
-        rows = cursor.fetchall()
-        conn.close()
-        
-        return [dict(row) for row in rows]
-    
-    except Exception as e:
-        print(f"Error in get_meeting_decisions: {e}")
-        return []
-
-def save_meeting_decision(data):
-    """
-    ذخیره یک تصمیم مجمع در دیتابیس
-    
-    Args:
-        data: dict شامل اطلاعات تصمیم مجمع
-    
-    Returns:
-        bool: موفقیت یا عدم موفقیت
-    """
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        
-        # بررسی تکراری نبودن
-        cursor.execute("""
-            SELECT id FROM meeting_decisions 
-            WHERE symbol = ? AND year_solar = ?
-        """, (data.get('symbol'), data.get('year_solar')))
-        
-        existing = cursor.fetchone()
-        
-        if existing:
-            # به‌روزرسانی
-            cursor.execute("""
-                UPDATE meeting_decisions SET
-                    capital = ?,
-                    net_profit = ?,
-                    retained_earnings = ?,
-                    approved_dividend = ?,
-                    eps = ?,
-                    dps = ?,
-                    dividend_percent = ?,
-                    meeting_date = ?,
-                    decision_date = ?,
-                    is_approved = ?,
-                    notes = ?,
-                    source = ?,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            """, (
-                data.get('capital'),
-                data.get('net_profit'),
-                data.get('retained_earnings'),
-                data.get('approved_dividend'),
-                data.get('eps'),
-                data.get('dps'),
-                data.get('dividend_percent'),
-                data.get('meeting_date'),
-                data.get('decision_date'),
-                data.get('is_approved', 1),
-                data.get('notes'),
-                data.get('source'),
-                existing[0]
-            ))
-        else:
-            # درج جدید
-            cursor.execute("""
-                INSERT INTO meeting_decisions (
-                    symbol, year_solar, capital, net_profit, retained_earnings,
-                    approved_dividend, eps, dps, dividend_percent,
-                    meeting_date, decision_date, is_approved, notes, source
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                data.get('symbol'),
-                data.get('year_solar'),
-                data.get('capital'),
-                data.get('net_profit'),
-                data.get('retained_earnings'),
-                data.get('approved_dividend'),
-                data.get('eps'),
-                data.get('dps'),
-                data.get('dividend_percent'),
-                data.get('meeting_date'),
-                data.get('decision_date'),
-                data.get('is_approved', 1),
-                data.get('notes'),
-                data.get('source')
-            ))
-        
-        conn.commit()
-        conn.close()
-        return True
-        
-    except Exception as e:
-        print(f"Error in save_meeting_decision: {e}")
-        return False
-
-def get_meeting_decisions_stats(symbol=None):
-    """
-    دریافت آمار تصمیمات مجمع
-    
-    Args:
-        symbol: نماد شرکت (اختیاری)
-    
-    Returns:
-        dict: آمار
-    """
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        
-        query = "SELECT COUNT(*) FROM meeting_decisions"
-        params = []
-        
-        if symbol:
-            query += " WHERE symbol = ?"
-            params.append(symbol)
-        
-        cursor.execute(query, params)
-        total = cursor.fetchone()[0]
-        
-        if symbol:
-            cursor.execute("""
-                SELECT 
-                    COUNT(*) as total,
-                    MAX(year_solar) as last_year,
-                    AVG(eps) as avg_eps,
-                    AVG(dps) as avg_dps,
-                    AVG(dividend_percent) as avg_percent
-                FROM meeting_decisions 
-                WHERE symbol = ?
-            """, (symbol,))
-            stats = cursor.fetchone()
-            
-            result = {
-                'total': total,
-                'last_year': stats[1] if stats else None,
-                'avg_eps': stats[2] if stats else 0,
-                'avg_dps': stats[3] if stats else 0,
-                'avg_percent': stats[4] if stats else 0
-            }
-        else:
-            cursor.execute("""
-                SELECT 
-                    COUNT(*) as total,
-                    COUNT(DISTINCT symbol) as symbols_count
-                FROM meeting_decisions
-            """)
-            stats = cursor.fetchone()
-            result = {
-                'total': stats[0] if stats else 0,
-                'symbols': stats[1] if stats else 0
-            }
-        
-        conn.close()
-        return result
-        
-    except Exception as e:
-        print(f"Error in get_meeting_decisions_stats: {e}")
-        return {'total': 0}
-
-def delete_meeting_decision(symbol, year_solar):
-    """حذف یک تصمیم مجمع"""
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        
-        cursor.execute("""
-            DELETE FROM meeting_decisions 
-            WHERE symbol = ? AND year_solar = ?
-        """, (symbol, year_solar))
-        
-        affected = cursor.rowcount
-        conn.commit()
-        conn.close()
-        
-        return affected > 0
-        
-    except Exception as e:
-        print(f"Error in delete_meeting_decision: {e}")
-        return False
-
 
 if __name__ == "__main__":
     init_db()

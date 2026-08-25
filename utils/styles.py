@@ -15,10 +15,30 @@ def apply_styles():
         font-family: 'Vazirmatn', Tahoma, sans-serif !important;
     }
 
+    /* ✅ اصلاح اصلی - پر کردن کامل صفحه */
     .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        max-width: 1300px;
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* حذف حاشیه‌های اضافی */
+    .main {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    /* ستون‌ها را به‌خوبی پخش کن */
+    .stColumn {
+        padding: 0 0.5rem !important;
+    }
+
+    .stColumns {
+        gap: 0.5rem !important;
     }
 
     /* ==========================================
@@ -27,6 +47,8 @@ def apply_styles():
     section[data-testid="stSidebar"] {
         background: #f1f5f9 !important;
         border-left: 1px solid #e2e8f0 !important;
+        min-width: 280px !important;
+        max-width: 320px !important;
     }
 
     section[data-testid="stSidebar"] > div {
@@ -35,6 +57,9 @@ def apply_styles():
         padding-right: 0.5rem;
     }
 
+    /* ==========================================
+       استایل المان‌ها (بقیه به‌قوت خود)
+       ========================================== */
     /* عنوان منو */
     section[data-testid="stSidebar"] [data-testid="stSidebarNav"]::before {
         content: "📊 تحلیل بنیادی";
@@ -80,7 +105,7 @@ def apply_styles():
     }
 
     /* ==========================================
-       جداول - ساده با هدر سرمه‌ای
+       جداول
        ========================================== */
     .stTable, table {
         border-radius: 12px !important;
@@ -92,7 +117,6 @@ def apply_styles():
         border: 1px solid #e2e8f0 !important;
     }
 
-    /* هدر جدول */
     .stTable thead th, table thead th {
         background: #0f172a !important;
         color: #ffffff !important;
@@ -103,7 +127,6 @@ def apply_styles():
         border: none !important;
     }
 
-    /* بدنه جدول */
     .stTable tbody td, table tbody td {
         background: #ffffff !important;
         color: #1e293b !important;
@@ -122,7 +145,7 @@ def apply_styles():
     }
 
     /* ==========================================
-       متریک‌ها - کارت‌های ساده
+       متریک‌ها
        ========================================== */
     div[data-testid="stMetric"] {
         background: #ffffff !important;
@@ -152,6 +175,65 @@ def apply_styles():
     }
 
     /* ==========================================
+       اینپوت‌ها
+       ========================================== */
+    .stTextInput input,
+    .stNumberInput input,
+    .stSelectbox > div > div {
+        color: #000000 !important;
+        font-weight: 500 !important;
+        font-family: 'Vazirmatn', Tahoma, sans-serif !important;
+        font-size: 1rem !important;
+        background: #ffffff !important;
+        border-radius: 10px !important;
+        border: 1.5px solid #d1d5db !important;
+        padding: 12px 16px !important;
+        min-height: 48px !important;
+        height: 48px !important;
+        line-height: 1.5 !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+    }
+
+    .stTextInput input::placeholder {
+        color: #6b7280 !important;
+        font-weight: 400 !important;
+        opacity: 1 !important;
+    }
+
+    .stTextInput input:focus,
+    .stNumberInput input:focus {
+        border-color: #0f172a !important;
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08) !important;
+        color: #000000 !important;
+        outline: none !important;
+    }
+
+    /* ==========================================
+       سلکت‌باکس
+       ========================================== */
+    .stSelectbox > div > div {
+        color: #000000 !important;
+        font-weight: 500 !important;
+        min-height: 48px !important;
+        height: 48px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .stSelectbox [data-baseweb="select"] div[role="button"] {
+        color: #000000 !important;
+        font-weight: 500 !important;
+        background: #ffffff !important;
+        min-height: 48px !important;
+        height: 48px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 0 12px !important;
+        font-size: 1rem !important;
+    }
+
+    /* ==========================================
        دکمه‌ها
        ========================================== */
     div.stButton > button {
@@ -175,158 +257,6 @@ def apply_styles():
     div.stButton > button:hover {
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1) !important;
         transform: translateY(-1px);
-    }
-
-    /* ================================================================
-       ✅ اینپوت‌ها - با ارتفاع کافی و متن مشکی
-       ================================================================ */
-    
-    /* استایل اصلی برای تکست‌باکس‌ها */
-    .stTextInput {
-        height: auto !important;
-    }
-
-    .stTextInput > div {
-        height: auto !important;
-    }
-
-    .stTextInput input {
-        color: #000000 !important;
-        font-weight: 500 !important;
-        font-family: 'Vazirmatn', Tahoma, sans-serif !important;
-        font-size: 1rem !important;
-        background: #ffffff !important;
-        border-radius: 10px !important;
-        border: 1.5px solid #d1d5db !important;
-        padding: 12px 16px !important;
-        min-height: 48px !important;
-        height: 48px !important;
-        line-height: 1.5 !important;
-        display: block !important;
-        box-sizing: border-box !important;
-        width: 100% !important;
-    }
-
-    /* placeholder */
-    .stTextInput input::placeholder {
-        color: #6b7280 !important;
-        font-weight: 400 !important;
-        opacity: 1 !important;
-        font-size: 0.95rem !important;
-    }
-
-    /* فوکوس */
-    .stTextInput input:focus {
-        border-color: #0f172a !important;
-        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08) !important;
-        color: #000000 !important;
-        outline: none !important;
-    }
-
-    /* ================================================================
-       ✅ اینپوت‌های عددی
-       ================================================================ */
-    .stNumberInput {
-        height: auto !important;
-    }
-
-    .stNumberInput > div {
-        height: auto !important;
-    }
-
-    .stNumberInput input {
-        color: #000000 !important;
-        font-weight: 500 !important;
-        font-family: 'Vazirmatn', Tahoma, sans-serif !important;
-        font-size: 1rem !important;
-        background: #ffffff !important;
-        border-radius: 10px !important;
-        border: 1.5px solid #d1d5db !important;
-        padding: 12px 16px !important;
-        min-height: 48px !important;
-        height: 48px !important;
-        line-height: 1.5 !important;
-        display: block !important;
-        box-sizing: border-box !important;
-        width: 100% !important;
-    }
-
-    .stNumberInput input::placeholder {
-        color: #6b7280 !important;
-        font-weight: 400 !important;
-        opacity: 1 !important;
-    }
-
-    .stNumberInput input:focus {
-        border-color: #0f172a !important;
-        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08) !important;
-        color: #000000 !important;
-        outline: none !important;
-    }
-
-    /* ================================================================
-       ✅ سلکت‌باکس
-       ================================================================ */
-    .stSelectbox {
-        height: auto !important;
-    }
-
-    .stSelectbox > div {
-        height: auto !important;
-    }
-
-    .stSelectbox > div > div {
-        color: #000000 !important;
-        font-weight: 500 !important;
-        font-family: 'Vazirmatn', Tahoma, sans-serif !important;
-        font-size: 1rem !important;
-        background: #ffffff !important;
-        border-radius: 10px !important;
-        border: 1.5px solid #d1d5db !important;
-        min-height: 48px !important;
-        height: 48px !important;
-        padding: 0 12px !important;
-        display: flex !important;
-        align-items: center !important;
-        box-sizing: border-box !important;
-    }
-
-    /* مقدار انتخاب‌شده در سلکت‌باکس */
-    .stSelectbox [data-baseweb="select"] div[role="button"] {
-        color: #000000 !important;
-        font-weight: 500 !important;
-        background: #ffffff !important;
-        min-height: 48px !important;
-        height: 48px !important;
-        display: flex !important;
-        align-items: center !important;
-        padding: 0 12px !important;
-        font-size: 1rem !important;
-    }
-
-    /* منوی dropdown سلکت‌باکس */
-    .stSelectbox [data-baseweb="popover"] div {
-        color: #000000 !important;
-        font-weight: 500 !important;
-        background: #ffffff !important;
-    }
-
-    .stSelectbox [data-baseweb="popover"] li {
-        color: #000000 !important;
-        font-weight: 500 !important;
-        background: #ffffff !important;
-        padding: 10px 16px !important;
-        font-size: 0.95rem !important;
-        min-height: 44px !important;
-    }
-
-    .stSelectbox [data-baseweb="popover"] li:hover {
-        background: #f1f5f9 !important;
-    }
-
-    .stSelectbox [data-baseweb="popover"] li[aria-selected="true"] {
-        background: #0f172a !important;
-        color: #ffffff !important;
     }
 
     /* ==========================================
@@ -416,6 +346,37 @@ def apply_styles():
     }
     ::-webkit-scrollbar-track {
         background: #f1f5f9;
+    }
+
+    /* ==========================================
+       ✅ صفحات - حذف فضای خالی اضافی
+       ========================================== */
+    .stApp {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .stAppViewContainer {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+
+    /* حذف padding اضافی از container اصلی */
+    .st-emotion-cache-1y4p8pa {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* تنظیم grid برای استفاده کامل از فضا */
+    .st-emotion-cache-1r6slb0 {
+        gap: 0.5rem !important;
+    }
+
+    /* جدول را به‌خوبی پخش کن */
+    .st-emotion-cache-16idsys {
+        width: 100% !important;
+        overflow-x: auto !important;
     }
 
     </style>
