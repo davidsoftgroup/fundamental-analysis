@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 import streamlit as st
 import sys
 import os
@@ -9,13 +8,46 @@ import math
 import jdatetime
 
 # ============================================================
-# import نسبی
+# تنظیم مسیر برای اجرا در همه محیط‌ها
 # ============================================================
-from ..utils.database import get_connection, init_db
-from ..utils.styles import apply_styles
+# مسیر ریشه پروژه را پیدا کن
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+
+# مسیر ریشه را به sys.path اضافه کن
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+# اگر در Streamlit Cloud هستی، مسیر را تنظیم کن
+if os.path.exists("/mount/src"):
+    project_root = "/mount/src/fundamental-analysis"
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
+# ============================================================
+# importها - استفاده از مسیر مطلق
+# ============================================================
+try:
+    from utils.database import get_connection, init_db
+    from utils.styles import apply_styles
+except ImportError as e:
+    # اگر خطا داد، مسیرهای دیگر را امتحان کن
+    try:
+        # مسیر مستقیم
+        sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+        from utils.database import get_connection, init_db
+        from utils.styles import apply_styles
+    except ImportError:
+        st.error("❌ خطا در بارگذاری ماژول‌ها!")
+        st.error(f"مسیر جاری: {current_dir}")
+        st.error(f"مسیر والد: {parent_dir}")
+        st.error(f"sys.path: {sys.path}")
+        st.stop()
 
 st.set_page_config(page_title="داشبورد", layout="wide", initial_sidebar_state="expanded")
 apply_styles()
+
+# ... بقیه کد شما ...
 
 st.markdown("""
 <style>
